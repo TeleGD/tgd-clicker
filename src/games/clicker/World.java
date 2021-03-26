@@ -1,6 +1,5 @@
 package games.clicker;
 
-import java.io.File;
 import java.util.ArrayList;
 
 import org.newdawn.slick.Color;
@@ -8,8 +7,7 @@ import org.newdawn.slick.Font;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
-import org.newdawn.slick.Music;
-import org.newdawn.slick.SlickException;
+import org.newdawn.slick.openal.Audio;
 import org.newdawn.slick.state.StateBasedGame;
 
 import app.AppFont;
@@ -22,8 +20,7 @@ import app.AppWorld;
 public class World extends AppWorld {
 
 	public static final Font Font = AppLoader.loadFont("/fonts/vt323.ttf", AppFont.BOLD, 18);
-	public final static String GAME_FOLDER_NAME="clicker";
-	public final static String DIRECTORY_MUSICS="musics"+File.separator+GAME_FOLDER_NAME+File.separator;
+	public final static String DIRECTORY_MUSICS="/musics/clicker/";
 	private ArrayList<Player> players;
 	private int count;
 	private boolean finished;
@@ -32,15 +29,11 @@ public class World extends AppWorld {
 	private int nbJoueursInit;
 	private static int marge = 10;
 
-	private static Music music;
+	private static Audio music;
+	private float musicPos;
 
 	static {
-		try {
-			music = new Music(DIRECTORY_MUSICS+"Sticky_and_Addictive.ogg");
-		} catch (SlickException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		music = AppLoader.loadAudio(DIRECTORY_MUSICS+"Sticky_and_Addictive.ogg");
 	}
 
 	public World (int ID) {
@@ -71,12 +64,7 @@ public class World extends AppWorld {
 				context.setColor(Color.black);
 				context.fillRect(width / 2 - width / 6 + 1, height / 2 - height / 6 + 1, width / 3 - 1, height / 3 - 1);
 				if (nbJoueursInit == 3) {
-					Image image = null;
-					try {
-						image = new Image("images/clicker/lucas.png");
-					} catch (SlickException e) {
-
-					}
+					Image image = AppLoader.loadPicture("/images/clicker/lucas.png");
 					image.draw(width * 3 / 4 - 8 * marge, height * 3 / 4 - 13 * marge);
 				}
 				for (int i = 0; i < nbJoueursInit; i++) {
@@ -131,7 +119,7 @@ public class World extends AppWorld {
 		appInput.clearKeyPressedRecord ();
 		appInput.clearControlPressedRecord ();
 		finished = false;
-		music.loop(1, (float) 0.4);
+		music.playAsMusic(1f, .4f, true);
 		count = 30000;
 		players = new ArrayList<Player>();
 		for (AppPlayer player : appGame.appPlayers) {
@@ -143,13 +131,20 @@ public class World extends AppWorld {
 	}
 
 	@Override
-	public void pause (GameContainer container, StateBasedGame game) {
-		music.pause ();
+	public void pause(GameContainer container, StateBasedGame game) {
+		this.musicPos = music.getPosition();
+		music.stop();
 	}
 
 	@Override
-	public void resume (GameContainer container, StateBasedGame game) {
-		music.resume ();
+	public void resume(GameContainer container, StateBasedGame game) {
+		music.playAsMusic(1, 4f, true);
+		music.setPosition(this.musicPos);
+	}
+
+	@Override
+	public void stop(GameContainer container, StateBasedGame game) {
+		music.stop();
 	}
 
 }
